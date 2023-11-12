@@ -3,14 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { getLatestCV } from "$lib/cv";
+import axios from "axios";
 
 export async function GET() {
 	const url = await getLatestCV();
 
-	return new Response("", {
-		status: 301,
+	const res = await axios.get(url, { responseType: "arraybuffer" });
+
+	return new Response(res.data, {
+		status: 200,
 		headers: {
-			location: url
+			"content-type": "application/pdf",
+			"content-disposition": "inline; filename=cv.pdf"
 		}
 	});
 }
