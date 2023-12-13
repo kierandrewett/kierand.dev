@@ -18,8 +18,6 @@
 	<Link href="https://www.dothq.org/">Dot HQ</Link>.
 </p>
 
-<Link href={"/api/cv"}>CV / Resume</Link>
-
 <Clock />
 <LastFm />
 <Interests />
