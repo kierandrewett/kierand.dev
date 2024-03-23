@@ -14,7 +14,7 @@
 <img class="profile-picture" src="/favicon.png" alt="Kieran Drewett Profile" />
 <h2>Kieran Drewett</h2>
 <p>
-	Full-stack developer based in the UK currently building Dot Browser at
+	Software engineer based in the UK currently working on Dot Browser at
 	<Link href="https://www.dothq.org/">Dot HQ</Link>.
 </p>
 
