@@ -5,7 +5,7 @@
 import axios from "axios";
 
 export async function GET() {
-	const favicon = await axios.get("https://github.com/EnderDev.png", {
+	const favicon = await axios.get("https://github.com/kierandrewett.png", {
 		responseType: "arraybuffer"
 	});
 
