@@ -12,7 +12,7 @@
 			>
 		</li>
 		<li>
-			<Link target="_blank" href="https://github.com/EnderDev" title="@EnderDev">GitHub</Link>
+			<Link target="_blank" href="https://github.com/kierandrewett" title="@kierandrewett">GitHub</Link>
 		</li>
 
 		<li>
