@@ -15,6 +15,6 @@
 		gap: 2rem;
 		max-width: 650px;
 		margin: 0 auto;
-		padding: 12rem 2rem;
+		padding: 10rem 2rem;
 	}
 </style>
