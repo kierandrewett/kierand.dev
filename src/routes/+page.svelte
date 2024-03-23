@@ -25,8 +25,8 @@
 
 <style>
 	.profile-picture {
-		width: 3rem;
-		height: 3rem;
-		border-radius: 3rem;
+		width: 5rem;
+		height: 5rem;
+		border-radius: 5rem;
 	}
 </style>
