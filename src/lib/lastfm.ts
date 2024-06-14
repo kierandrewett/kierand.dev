@@ -56,9 +56,30 @@ export const getCurrentlyScrobbling = async () => {
 		return result;
 	} catch (e: any) {
 		console.log(e);
-		return Promise.reject({
-			ok: false,
+		return Promise.resolve({
+			ok: false as const,
 			error: e
+		});
+	}
+};
+
+export const getTopTags = async () => {
+	try {
+		const { data } = await axios.get(
+			"https://raw.githubusercontent.com/kierandrewett/lastfm-data/main/top_tags.json"
+		);
+
+		const result = {
+			ok: true,
+			tags: data
+		};
+
+		return result;
+	} catch (e: any) {
+		console.log(e);
+		return Promise.resolve({
+			ok: false,
+			error: e.toString()
 		});
 	}
 };
