@@ -33,7 +33,7 @@
 			try {
 				const res = await axios.get("/api/lastfm/tags");
 
-				tagsData = res.data.tags || [].map((t) => title(t)).slice(0, 5);
+				tagsData = ((res.data.tags || []) as string[]).map((t) => title(t)).slice(0, 5);
 
 				tags = tagsData;
 			} catch (e) {}
@@ -130,6 +130,7 @@
 		display: flex;
 		gap: 0.25rem;
 		list-style-type: none;
+		flex-wrap: wrap;
 
 		& li {
 			background-color: rgba(246, 226, 252, 0.1);
@@ -139,6 +140,7 @@
 			font-size: 1rem;
 			font-weight: 600;
 			border-radius: 4px;
+			white-space: nowrap;
 		}
 	}
 </style>
