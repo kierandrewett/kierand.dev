@@ -33,7 +33,9 @@
 			try {
 				const res = await axios.get("/api/lastfm/tags");
 
-				tagsData = (Object.keys(res.data.tags || {}) || []).map((t) => title(t));
+				tagsData = (Object.keys(res.data.tags || {}) || [])
+					.map((t) => title(t))
+					.slice(0, 5);
 
 				tags = tagsData;
 			} catch (e) {}
