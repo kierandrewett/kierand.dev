@@ -66,7 +66,7 @@ export const getCurrentlyScrobbling = async () => {
 export const getTopTags = async () => {
 	try {
 		const { data } = await axios.get(
-			"https://raw.githubusercontent.com/kierandrewett/lastfm-data/main/top_tags.json"
+			"https://raw.githubusercontent.com/kierandrewett/lastfm-data/main/top_10_tags.json"
 		);
 
 		const result = {
