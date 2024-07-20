@@ -65,7 +65,7 @@
 			<strong
 				>{data && data.ok ? data?.track_name || "Nothing playing" : "Connecting..."}</strong
 			>
-			<span>{data && data.ok ? data?.artist_name : ""}</span>
+			<span>{(data && data.ok && data.artist_name) ? data.artist_name : ""}</span>
 		</div>
 	</a>
 
