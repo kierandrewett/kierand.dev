@@ -16,7 +16,7 @@
 		</li>
 
 		<li>
-			<Link target="_blank" href="mailto:hello@kierand.dev" title="hello@kierand.dev"
+			<Link target="_blank" href="mailto:kieran@drewett.dev" title="kieran@drewett.dev"
 				>Email (Personal)</Link
 			>
 		</li>
