@@ -16,6 +16,10 @@
 		</li>
 
 		<li>
+			<Link target="_blank" href="https://www.linkedin.com/in/kieran-drewett" title="LinkedIn">LinkedIn</Link>
+		</li>
+
+		<li>
 			<Link target="_blank" href="mailto:kieran@drewett.dev" title="kieran@drewett.dev"
 				>Email (Personal)</Link
 			>
