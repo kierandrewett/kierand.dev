@@ -14,7 +14,7 @@
 <img class="profile-picture" src="/favicon.png" alt="Kieran Drewett Profile" />
 <h2>Kieran Drewett</h2>
 <p>
-	<span>Software engineer based in the UK.</span>
+	<span>Software Engineer based in the UK.</span>
         <br />
 	<span>Currently working on Dot Browser at <Link href="https://www.dothq.org/">Dot HQ</Link>.</span>
 </p>
