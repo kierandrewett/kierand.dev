@@ -46,6 +46,14 @@
 				title="@enderdev@mastodon.social">Mastodon</Link
 			>
 		</li>
+
+		<li>
+			<Link
+				target="_blank"
+				href="https://last.fm/user/EnderDev"
+				title="@EnderDev">Last.fm</Link
+			>
+		</li>
 	</ul>
 </section>
 
