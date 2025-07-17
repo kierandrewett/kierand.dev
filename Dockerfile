@@ -6,10 +6,8 @@ COPY package*.json ./
 
 RUN yarn install --frozen-lockfile
 
-COPY . .
-
-RUN yarn build
+COPY . . 
 
 EXPOSE 4173
 
-CMD ["yarn", "preview", "--host"]
+CMD ["yarn", "start"]
