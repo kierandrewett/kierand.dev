@@ -3,28 +3,27 @@
 	import Contact from "../components/Contact.svelte";
 	import Interests from "../components/Interests.svelte";
 	import LastFm from "../components/LastFM.svelte";
-	import Link from "../components/Link.svelte";
 </script>
 
-<svelte:head>
-	<title>Kieran Drewett</title>
-	<meta name="description" content="Kieran Drewett" />
-</svelte:head>
-
-<img class="profile-picture" src="/favicon.png" alt="Kieran Drewett Profile" />
-<h2>Kieran Drewett</h2>
+<h2>
+	<div class="icon-container">
+		<img class="profile-picture" src="/favicon.png" alt="Kieran Drewett Profile" />
+	</div>
+	Kieran Drewett
+</h2>
 <p>
 	<span>Software Engineer based in the UK.</span>
 </p>
 
 <Clock />
 <LastFm />
+<Interests />
 <Contact />
 
 <style>
 	.profile-picture {
-		width: 5rem;
-		height: 5rem;
+		width: 1.75rem;
+		height: 1.75rem;
 		border-radius: 5rem;
 	}
 </style>

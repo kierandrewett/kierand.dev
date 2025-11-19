@@ -1,9 +1,15 @@
 <script>
+	import { Contact } from "lucide-svelte";
 	import Link from "./Link.svelte";
 </script>
 
 <section class="contact">
-	<h4>Get in touch</h4>
+	<h4>
+		<div class="icon-container">
+			<Contact stroke="currentColor" />
+		</div>
+		Get in touch
+	</h4>
 
 	<ul>
 		<li>
@@ -12,11 +18,15 @@
 			>
 		</li>
 		<li>
-			<Link target="_blank" href="https://github.com/kierandrewett" title="@kierandrewett">GitHub</Link>
+			<Link target="_blank" href="https://github.com/kierandrewett" title="@kierandrewett"
+				>GitHub</Link
+			>
 		</li>
 
 		<li>
-			<Link target="_blank" href="https://www.linkedin.com/in/kieran-drewett" title="LinkedIn">LinkedIn</Link>
+			<Link target="_blank" href="https://www.linkedin.com/in/kieran-drewett" title="LinkedIn"
+				>LinkedIn</Link
+			>
 		</li>
 
 		<li>
@@ -48,10 +58,8 @@
 		</li>
 
 		<li>
-			<Link
-				target="_blank"
-				href="https://last.fm/user/EnderDev"
-				title="@EnderDev">Last.fm</Link
+			<Link target="_blank" href="https://last.fm/user/EnderDev" title="@EnderDev"
+				>Last.fm</Link
 			>
 		</li>
 	</ul>

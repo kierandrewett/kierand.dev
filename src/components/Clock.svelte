@@ -1,30 +1,56 @@
 <script lang="ts">
+	import { onMount } from "svelte";
+
 	let rotateHours = 0;
 	let rotateMinutes = 0;
 	let rotateSeconds = 0;
-	let dateString = "";
+	let dateString: string | null = null;
 
-	function tick() {
+	function updateHands() {
 		const date = new Date();
 
 		rotateHours = 30 * (date.getHours() - 12) + date.getMinutes() / 2;
 		rotateMinutes = 6 * date.getMinutes();
 		rotateSeconds = 6 * date.getSeconds();
-
-		dateString = date.toLocaleString("en-GB", {
-			timeZone: "Europe/London",
-			weekday: "long",
-			month: "long",
-			day: "2-digit",
-			hour: "numeric",
-			minute: "numeric",
-			year: "2-digit",
-			hour12: false
-		});
 	}
 
-	tick();
-	setInterval(() => tick(), 1000);
+	function createDateString() {
+		const date = new Date();
+
+		const parts = new Intl.DateTimeFormat("en-GB", {
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: false
+		}).formatToParts(date);
+
+		const day = parts.find((p) => p.type === "day")?.value;
+		const month = parts.find((p) => p.type === "month")?.value;
+		const year = parts.find((p) => p.type === "year")?.value;
+		const hour = parts.find((p) => p.type === "hour")?.value;
+		const minute = parts.find((p) => p.type === "minute")?.value;
+
+		const d = Number(day);
+		const suffix =
+			d % 10 === 1 && d !== 11
+				? "st"
+				: d % 10 === 2 && d !== 12
+				? "nd"
+				: d % 10 === 3 && d !== 13
+				? "rd"
+				: "th";
+
+		dateString = `${day}${suffix} ${month} ${year} at ${hour}:${minute}`;
+	}
+
+	onMount(() => {
+		createDateString();
+
+		updateHands();
+		setInterval(updateHands, 1000);
+	});
 </script>
 
 <div class="clock">
@@ -34,7 +60,13 @@
 		<div class="clock-hand minutes" style="--rotate: {rotateMinutes}deg" />
 		<div class="clock-hand seconds" style="--rotate: {rotateSeconds}deg" />
 	</div>
-	<span>{dateString}</span>
+	<span>
+		{#if dateString}
+			{dateString}
+		{:else}
+			—
+		{/if}
+	</span>
 </div>
 
 <style>

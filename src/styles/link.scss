@@ -1,0 +1,19 @@
+.link {
+	display: flex;
+	font-weight: 500;
+	color: var(--color-lighter);
+	max-width: fit-content;
+	padding-inline: 4px;
+	transition: 0.1s all cubic-bezier(0.895, 0.03, 0.685, 0.22);
+	border-radius: 0.25rem;
+	user-select: none;
+}
+
+.link:hover {
+	background-color: var(--color);
+	color: var(--background);
+}
+
+.link[href^="http"] {
+	padding-inline-end: 0px !important;
+}
