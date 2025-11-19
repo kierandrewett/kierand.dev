@@ -24,4 +24,10 @@
 		padding-inline-start: calc(var(--test) + 1rem);
 		padding-inline-end: 2rem;
 	}
+
+	@media (max-width: 700px) {
+		main {
+			padding-inline-start: calc(var(--test) + 2rem);
+		}
+	}
 </style>
