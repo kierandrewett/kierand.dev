@@ -5,7 +5,7 @@
 	import { onMount } from "svelte";
 	import title from "title";
 
-	let data: Awaited<ReturnType<typeof import("$lib/lastfm").getCurrentlyScrobbling>>;
+	let data: any = null;
 	let tags: string[] = [""];
 
 	let titleEl: HTMLElement | null = null;
@@ -17,6 +17,9 @@
 	let isLoadingAlbumArt = true;
 	let currentAlbumArtURL: string | null = null;
 
+	let ws: WebSocket | null = null;
+	let wsConnected = false;
+
 	const MASK_NONE =
 		"linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)";
 	const MASK_RIGHT = "linear-gradient(to right, black 0%, black 90%, transparent 100%)";
@@ -24,7 +27,6 @@
 
 	function hardReset() {
 		if (!titleEl) return;
-
 		titleEl.style.animation = "none";
 		titleEl.style.transform = "translateX(0)";
 		titleEl.classList.remove("marquee");
@@ -33,22 +35,16 @@
 	}
 
 	function loadAlbumArt(url: string | null) {
-		console.log("Loading album art", url);
 		if (!albumEl) return;
 
-		if (url === currentAlbumArtURL && url !== null) {
-			console.log("Album art URL unchanged, skipping load");
-			return;
-		}
+		if (url === currentAlbumArtURL && url !== null) return;
 
 		isLoadingAlbumArt = url !== null;
 
 		albumEl.classList.remove("loaded");
 		albumEl.style.backgroundImage = "";
 
-		if (!url) {
-			return;
-		}
+		if (!url) return;
 
 		const img = new Image();
 		img.src = url;
@@ -56,10 +52,7 @@
 
 		document.body.appendChild(img);
 
-		console.log("Album art image created", img);
-
 		img.onload = () => {
-			console.log("Album art loaded", url);
 			currentAlbumArtURL = url;
 			isLoadingAlbumArt = false;
 
@@ -105,7 +98,7 @@
 			return;
 		}
 
-		const SPEED = 0.25; // seconds per pixel
+		const SPEED = 0.25;
 		const duration = distance * SPEED;
 		titleEl.style.setProperty("--marquee-time", `${duration}s`);
 	}
@@ -145,24 +138,83 @@
 		raf = requestAnimationFrame(trackTransform);
 	}
 
-	async function init() {
-		if (!browser || document.visibilityState === "hidden") return;
+	/* ---------------------------------------------------
+	   🔥 WS HANDLING
+	---------------------------------------------------- */
+	function connectWS() {
+		if (!browser) return;
 
-		const res = await axios.get("/api/lastfm");
-		data = res.data;
+		try {
+			ws = new WebSocket("wss://lastfm.drewett.dev");
 
-		if (data?.ok) {
-			let art =
-				data.album_art && !data.album_art.includes("2a96cbd8b46e442fc41c2b86b821562f")
-					? data.album_art
-					: null;
+			ws.onopen = () => {
+				wsConnected = true;
+				console.log("WS connected");
+			};
 
-			loadAlbumArt(art);
+			ws.onmessage = (e) => {
+				let msg = null;
+				try {
+					msg = JSON.parse(e.data);
+				} catch {
+					return;
+				}
+
+				if ("playing" in msg) {
+					if (!msg.playing) {
+						data = { ok: true };
+						loadAlbumArt(null);
+						checkOverflow();
+					}
+
+					return;
+				}
+
+				if ("track" in msg) {
+					data = {
+						ok: true,
+						track_name: msg.track,
+						artist_name: msg.artist,
+						album: msg.album,
+						album_art: msg.album_art
+					};
+					loadAlbumArt(msg.album_art);
+					checkOverflow();
+				}
+			};
+
+			ws.onerror = () => {
+				console.log("WS error");
+			};
+
+			ws.onclose = () => {
+				wsConnected = false;
+				console.log("WS closed, retrying in 5s...");
+				setTimeout(connectWS, 5000);
+			};
+		} catch {
+			console.log("WS connection failed, fallbacking");
 		}
+	}
 
-		await Promise.resolve();
-		checkOverflow();
-		updateMask();
+	async function fallbackAPI() {
+		if (wsConnected) return;
+
+		try {
+			const res = await axios.get("/api/lastfm");
+			data = res.data;
+
+			if (data?.ok) {
+				let art =
+					data.album_art && !data.album_art.includes("2a96cbd8b46e442fc41c2b86b821562f")
+						? data.album_art
+						: null;
+
+				loadAlbumArt(art);
+				checkOverflow();
+				updateMask();
+			}
+		} catch {}
 	}
 
 	async function getTopTags() {
@@ -185,9 +237,11 @@
 	}
 
 	onMount(() => {
-		init();
+		connectWS();
 		getTopTags();
-		setInterval(() => init(), 5000);
+
+		// fallback every 5s
+		setInterval(fallbackAPI, 5000);
 	});
 </script>
 
