@@ -302,7 +302,7 @@
 				{/if}
 			</strong>
 			<span>{data?.ok && data.artist_name ? data.artist_name : ""}</span>
-			{#if progress}
+			{#if progress && data?.ok && data.track_name}
 				<div class="progress">
 					<span>
 						{formatTime(progress.position_ms || 0)}
