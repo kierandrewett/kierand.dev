@@ -6,6 +6,7 @@
 	import title from "title";
 
 	let data: any = null;
+	let progress: any = null;
 	let tags: string[] = [""];
 
 	let titleEl: HTMLElement | null = null;
@@ -138,9 +139,6 @@
 		raf = requestAnimationFrame(trackTransform);
 	}
 
-	/* ---------------------------------------------------
-	   🔥 WS HANDLING
-	---------------------------------------------------- */
 	function connectWS() {
 		if (!browser) return;
 
@@ -166,6 +164,11 @@
 						loadAlbumArt(null);
 						checkOverflow();
 					}
+
+					progress = {
+						position_ms: msg.position_ms,
+						duration_ms: msg.duration_ms
+					};
 
 					return;
 				}
@@ -224,6 +227,13 @@
 			const res = await axios.get("/api/lastfm/tags");
 			tags = ((res.data.tags || []) as string[]).map((t) => title(t)).slice(0, 7);
 		} catch {}
+	}
+
+	function formatTime(ms: number) {
+		const totalSeconds = Math.floor(ms / 1000);
+		const minutes = Math.floor(totalSeconds / 60);
+		const seconds = totalSeconds % 60;
+		return `${minutes}:${String(seconds).padStart(2, "0")}`;
 	}
 
 	$: if (titleEl) {
@@ -287,6 +297,21 @@
 				{/if}
 			</strong>
 			<span>{data?.ok && data.artist_name ? data.artist_name : ""}</span>
+			{#if progress}
+				<div class="progress">
+					<span>
+						{formatTime(progress.position_ms || 0)}
+					</span>
+					<div class="progress-bar">
+						<div
+							style:width={`${(progress.position_ms / progress.duration_ms) * 100}%`}
+						/>
+					</div>
+					<span>
+						{formatTime(progress.duration_ms || 0)}
+					</span>
+				</div>
+			{/if}
 		</div>
 	</a>
 
@@ -369,6 +394,37 @@
 		white-space: nowrap;
 		min-width: auto;
 		width: fit-content;
+	}
+
+	.lastfm-player .info .progress {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.875rem;
+		color: var(--color-lighter);
+		font-weight: 400;
+		font-variant-numeric: tabular-nums;
+		align-items: center;
+		gap: 0.75rem;
+		line-height: 1.25rem;
+		font-size: 0.75rem;
+	}
+
+	.lastfm-player .info .progress .progress-bar {
+		flex: 1;
+		height: 4px;
+		background-color: var(--border);
+		border-radius: 2px;
+		overflow: hidden;
+		position: relative;
+		display: flex;
+		align-items: center;
+
+		& > div {
+			height: 100%;
+			background-color: var(--color);
+			width: 0%;
+			border-radius: 2px;
+		}
 	}
 
 	.lastfm-tags {
