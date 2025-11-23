@@ -165,10 +165,14 @@
 						checkOverflow();
 					}
 
-					progress = {
-						position_ms: msg.position_ms,
-						duration_ms: msg.duration_ms
-					};
+					if (msg.position_ms && msg.duration_ms) {
+						progress = {
+							position_ms: msg.position_ms,
+							duration_ms: msg.duration_ms
+						};
+					} else {
+						progress = null;
+					}
 
 					return;
 				}
@@ -179,7 +183,8 @@
 						track_name: msg.track,
 						artist_name: msg.artist,
 						album: msg.album,
-						album_art: msg.album_art
+						album_art:
+							msg.album_art || msg.track_info?.album?.image.at(-1)?.["url"] || null
 					};
 					loadAlbumArt(msg.album_art);
 					checkOverflow();
