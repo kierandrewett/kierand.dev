@@ -2,6 +2,8 @@ FROM rust:1.85-alpine AS build
 
 WORKDIR /app
 
+RUN apk add --no-cache musl-dev gcc
+
 COPY . .
 
 RUN cargo build --release
