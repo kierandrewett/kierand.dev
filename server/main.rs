@@ -20,6 +20,7 @@ struct AppState {
     projects_path: PathBuf,
     profiles_path: PathBuf,
     contact_path: PathBuf,
+    tagline_path: PathBuf,
     templates: Arc<Tera>,
 }
 
@@ -89,6 +90,7 @@ async fn main() {
         projects_path: PathBuf::from("content/projects.md"),
         profiles_path: PathBuf::from("content/profiles.md"),
         contact_path: PathBuf::from("content/contact.md"),
+        tagline_path: PathBuf::from("content/tagline.md"),
         templates: Arc::new(templates),
     });
 
@@ -129,13 +131,22 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let projects_fut = tokio::fs::read_to_string(&state.projects_path);
     let profiles_fut = tokio::fs::read_to_string(&state.profiles_path);
     let contact_fut = tokio::fs::read_to_string(&state.contact_path);
+    let tagline_fut = tokio::fs::read_to_string(&state.tagline_path);
     let tags_fut = fetch_top_tags(&state.client);
     let lastfm_fut = fetch_currently_scrobbling(&state.client);
 
-    let (projects_result, profiles_result, contact_result, tags_result, lastfm_result) = tokio::join!(
+    let (
+        projects_result,
+        profiles_result,
+        contact_result,
+        tagline_result,
+        tags_result,
+        lastfm_result,
+    ) = tokio::join!(
         projects_fut,
         profiles_fut,
         contact_fut,
+        tagline_fut,
         tags_fut,
         lastfm_fut
     );
@@ -149,11 +160,14 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let contact_markdown = contact_result.unwrap_or_else(|_| {
         "- **Contact unavailable** — Could not read `content/contact.md`.".to_string()
     });
+    let tagline_markdown =
+        tagline_result.unwrap_or_else(|_| "Software Engineer based in the UK.".to_string());
 
     let initial_tags = tags_result.unwrap_or_default();
     let projects_html = render_markdown(&projects_markdown);
     let profiles_html = render_markdown(&profiles_markdown);
     let contact_html = render_markdown(&contact_markdown);
+    let tagline_html = render_markdown(&tagline_markdown);
     let initial_lastfm = match lastfm_result {
         Ok(payload) => InitialLastfm {
             ok: payload.ok,
@@ -170,6 +184,7 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     context.insert("projects_html", &projects_html);
     context.insert("profiles_html", &profiles_html);
     context.insert("contact_html", &contact_html);
+    context.insert("tagline_html", &tagline_html);
     context.insert("initial_tags", &build_template_tags(&initial_tags));
     context.insert("initial_lastfm", &initial_lastfm);
 
