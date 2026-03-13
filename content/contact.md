@@ -1,0 +1,3 @@
+- [kieran@drewett.dev](mailto:kieran@drewett.dev) <sup>(personal)</sup>
+- [kieran@dothq.org](mailto:kieran@dothq.org) <sup>(business)</sup>
+- [kieran@linux.com](mailto:kieran@linux.com) 

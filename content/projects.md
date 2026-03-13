@@ -1,0 +1,18 @@
+-   [Artifex](https://github.com/kierandrewett/artifex) is a work-in-progress personal AI assistant.
+-   [WING](https://github.com/kierandrewett/wing) is an experimental Wayland compositor with a QuickJS runtime so UI can be JSX.
+-   [Dot Browser](https://github.com/dothq/browser) is a privacy-focused web browser built on top of [Mozilla Firefox](https://mozilla.org/firefox).
+-   [Immidi](https://github.com/kierandrewett/immidi) is an immediate-mode note player/functional programming langauge for creating music.
+-   A powerful [electronic voting system](https://github.com/kierandrewett/consensus) built using TypeScript and Fastify.
+-   An [attempt at making a custom shell](https://github.com/kierandrewett/hypr) with Hyprland.
+-   A tool for [generating OTJ logs](https://github.com/kierandrewett/otj-log-llm) using a large-language model.
+-   A [virtual machine management frontend](https://github.com/kierandrewett/vm-manager) for QEMU virtual machines deployed through Docker.
+-   A [desktop app](https://github.com/kierandrewett/pikvm-desktop) for accessing my [PiKVM](https://pikvm.org)'s interface from my desk.
+-   A [driving game](https://github.com/kierandrewett/8.2-driving) about driving safely made using Godot.
+-   A [Wordle clone](https://github.com/kierandrewett/ferdle) written in Rust for the terminal.
+-   A [pacman-inspired CLI wrapper](https://github.com/kierandrewett/pacman) for `dnf`/`yum` on RPM-based Linux systems.
+-   [Patient Management System](https://github.com/kierandrewett/dtsp-patient-management-system) written in C# using WPF.
+-   [Nightly Flatpak releases](https://github.com/kierandrewett/firefox-nightly-flatpak) of Mozilla Firefox.
+-   A [WebSocket](https://github.com/kierandrewett/lastfm-ws) for accessing real-time scrobble data from my [Last.fm](https://last.fm/user/EnderDev) profile.
+-   My collection of [EasyEffects presets](https://github.com/kierandrewett/easyeffects-presets) I use on my machine.
+-   [Historical Last.fm data](https://github.com/kierandrewett/lastfm-data) archived and versioned in Git.
+-   [drewett.dev](https://github.com/kierandrewett/kierand.dev) is this website.

@@ -1,0 +1,86 @@
+{% extends "base.html" %} {% block content %}
+<header class="intro">
+	<div class="intro-text">
+		<h1>Kieran Drewett</h1>
+		<p>Software Engineer based in the UK.</p>
+	</div>
+	<img class="profile-picture" src="/favicon.png" alt="Kieran Drewett" />
+</header>
+
+<section class="content-block">
+	<div class="link-groups">
+		<div class="link-group">
+			<h3>Profiles</h3>
+			<div class="link-list-markdown">{{ profiles_html | safe }}</div>
+		</div>
+		<div class="link-group">
+			<h3>Contact</h3>
+			<div class="link-list-markdown">{{ contact_html | safe }}</div>
+		</div>
+	</div>
+</section>
+
+<section class="content-block">
+	<section class="lastfm">
+		<h4>Currently listening to</h4>
+		<a
+			class="lastfm-player"
+			href="https://last.fm/user/EnderDev"
+			target="_blank"
+			rel="noreferrer"
+		>
+			<div
+				class="album-art {% if initial_lastfm.album_art %}loaded{% endif %}"
+				id="album-art"
+				{%
+				if
+				initial_lastfm.album_art
+				%}
+				style="background-image: url('{{ initial_lastfm.album_art }}')"
+				{%
+				endif
+				%}
+			>
+				<div class="art-icon loading" id="art-icon" aria-hidden="true"></div>
+			</div>
+			<div class="info">
+				<strong
+					id="track-title-wrap"
+					data-initial-ok="{{ initial_lastfm.ok }}"
+					data-initial-track="{{ initial_lastfm.track_name }}"
+					data-initial-artist="{{ initial_lastfm.artist_name }}"
+					data-initial-art="{{ initial_lastfm.album_art }}"
+				>
+					<div id="track-title">
+						{% if initial_lastfm.ok %} {% if initial_lastfm.track_name %} {{
+						initial_lastfm.track_name }} {% else %} Nothing playing {% endif %} {% else
+						%} Connecting... {% endif %}
+					</div>
+				</strong>
+				<span id="artist-name">{{ initial_lastfm.artist_name }}</span>
+				<div class="progress" id="progress" hidden>
+					<span id="progress-current">0:00</span>
+					<div class="progress-bar">
+						<div id="progress-bar-fill" style="width: 0%"></div>
+					</div>
+					<span id="progress-duration">0:00</span>
+				</div>
+			</div>
+		</a>
+
+		<h5>My top tags</h5>
+		<ul class="lastfm-tags" id="lastfm-tags">
+			{% for tag in initial_tags %}
+			<li class="lastfm-tag">
+				<a href="{{ tag.url }}" target="_blank" rel="noreferrer">{{ tag.label }}</a>
+			</li>
+			{% endfor %}
+		</ul>
+	</section>
+</section>
+
+<section class="content-block projects-section">
+	<h2>Projects</h2>
+	<div class="projects-markdown">{{ projects_html | safe }}</div>
+</section>
+{% endblock content %}
