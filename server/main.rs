@@ -10,7 +10,7 @@ use pulldown_cmark::{html::push_html, Options, Parser};
 use reqwest::Client;
 use serde::Serialize;
 use serde_json::Value;
-use std::{env, net::SocketAddr, path::PathBuf, sync::Arc};
+use std::{env, net::SocketAddr, path::PathBuf, sync::Arc, time::UNIX_EPOCH};
 use tera::{Context, Tera};
 use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
@@ -176,6 +176,8 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let contact_html = render_markdown(&preprocess_markdown(&contact_markdown));
     let tagline_html = render_markdown(&preprocess_markdown(&tagline_markdown));
     let footer_html = render_markdown(&preprocess_markdown(&footer_markdown));
+    let app_css_version = asset_version("static/app.css").await;
+    let app_js_version = asset_version("static/app.js").await;
     let initial_lastfm = match lastfm_result {
         Ok(payload) => InitialLastfm {
             ok: payload.ok,
@@ -196,6 +198,8 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     context.insert("footer_html", &footer_html);
     context.insert("initial_tags", &build_template_tags(&initial_tags));
     context.insert("initial_lastfm", &initial_lastfm);
+    context.insert("app_css_version", &app_css_version);
+    context.insert("app_js_version", &app_js_version);
 
     match state.templates.render("index.html", &context) {
         Ok(rendered) => Html(rendered).into_response(),
@@ -203,6 +207,19 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
             StatusCode::INTERNAL_SERVER_ERROR,
             &format!("template render failed: {error}"),
         ),
+    }
+}
+
+async fn asset_version(path: &str) -> String {
+    match tokio::fs::metadata(path).await {
+        Ok(metadata) => match metadata.modified() {
+            Ok(modified) => match modified.duration_since(UNIX_EPOCH) {
+                Ok(duration) => duration.as_secs().to_string(),
+                Err(_) => "1".to_string(),
+            },
+            Err(_) => "1".to_string(),
+        },
+        Err(_) => "1".to_string(),
     }
 }
 

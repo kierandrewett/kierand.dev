@@ -6,10 +6,10 @@
 		<title>{% block title %}Kieran Drewett{% endblock title %}</title>
 		<meta name="description" content="Kieran Drewett" />
 		<link rel="icon" href="/favicon.ico" />
-		<link rel="stylesheet" href="/app.css" />
+		<link rel="stylesheet" href='/app.css?v={{ app_css_version | default(value="1") }}' />
 	</head>
 	<body>
 		<main>{% block content %}{% endblock content %}</main>
-		<script src="/app.js" defer></script>
+		<script src='/app.js?v={{ app_js_version | default(value="1") }}' defer></script>
 	</body>
 </html>
