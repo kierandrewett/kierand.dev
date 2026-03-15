@@ -1,4 +1,3 @@
-use chrono::Datelike;
 use axum::{
     extract::State,
     http::{header, HeaderValue, StatusCode},
@@ -6,6 +5,7 @@ use axum::{
     routing::get,
     Json, Router,
 };
+use chrono::Datelike;
 use pulldown_cmark::{html::push_html, Options, Parser};
 use reqwest::Client;
 use serde::Serialize;
@@ -168,8 +168,7 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     });
     let tagline_markdown =
         tagline_result.unwrap_or_else(|_| "Software Engineer based in the UK.".to_string());
-    let footer_markdown =
-        footer_result.unwrap_or_else(|_| "© Kieran Drewett".to_string());
+    let footer_markdown = footer_result.unwrap_or_else(|_| "© Kieran Drewett".to_string());
 
     let initial_tags = tags_result.unwrap_or_default();
     let projects_html = render_markdown(&preprocess_markdown(&projects_markdown));
