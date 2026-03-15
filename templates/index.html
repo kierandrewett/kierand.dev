@@ -30,7 +30,8 @@
 			target="_blank"
 			rel="noreferrer"
 		>
-			<div class="album-art-glow" id="album-art-glow" aria-hidden="true"></div>
+			<div class="album-art-glow" id="album-art-glow-a" aria-hidden="true"></div>
+			<div class="album-art-glow" id="album-art-glow-b" aria-hidden="true"></div>
 			<div
 				class="album-art {% if initial_lastfm.album_art %}loaded{% endif %}"
 				id="album-art"
@@ -85,4 +86,8 @@
 	<h2>Projects</h2>
 	<div class="projects-markdown">{{ projects_html | safe }}</div>
 </section>
+
+<footer class="site-footer">
+	<div class="footer-markdown">{{ footer_html | safe }}</div>
+</footer>
 {% endblock content %}

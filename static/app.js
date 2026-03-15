@@ -3,7 +3,9 @@
 	const titleEl = document.getElementById("track-title");
 	const artistEl = document.getElementById("artist-name");
 	const albumEl = document.getElementById("album-art");
-	const albumGlowEl = document.getElementById("album-art-glow");
+	const albumGlowAEl = document.getElementById("album-art-glow-a");
+	const albumGlowBEl = document.getElementById("album-art-glow-b");
+	const albumGlowEls = [albumGlowAEl, albumGlowBEl].filter(Boolean);
 	const artIconEl = document.getElementById("art-icon");
 	const progressEl = document.getElementById("progress");
 	const progressCurrentEl = document.getElementById("progress-current");
@@ -27,6 +29,8 @@
 	let progress = null;
 	let overflow = false;
 	let raf = null;
+	let activeGlowIndex = 0;
+	let hasInitializedGlow = false;
 	let currentAlbumArtURL = null;
 	let ws = null;
 	let wsConnected = false;
@@ -46,16 +50,45 @@
 		titleEl.style.animation = "";
 	}
 
-	function setAlbumArtGlow() {
-		if (!albumGlowEl) return;
-		albumGlowEl.style.backgroundImage =
+	function setAlbumArtGlow(animate = true) {
+		if (albumGlowEls.length === 0) return;
+		const nextBackgroundImage =
 			albumEl.style.backgroundImage || `url("${fallbackAlbumArtURL}")`;
+		const activeGlowEl = albumGlowEls[activeGlowIndex];
+		const shouldAnimate = animate && hasInitializedGlow;
+
+		if (activeGlowEl.style.backgroundImage === nextBackgroundImage) {
+			return;
+		}
+
+		if (!shouldAnimate || !activeGlowEl.style.backgroundImage) {
+			for (const glowEl of albumGlowEls) {
+				glowEl.style.transition = "none";
+				glowEl.classList.remove("is-visible");
+			}
+			activeGlowEl.style.backgroundImage = nextBackgroundImage;
+			activeGlowEl.classList.add("is-visible");
+			void activeGlowEl.offsetWidth;
+			for (const glowEl of albumGlowEls) {
+				glowEl.style.transition = "";
+			}
+			hasInitializedGlow = true;
+			return;
+		}
+
+		const nextGlowIndex = activeGlowIndex === 0 ? 1 : 0;
+		const nextGlowEl = albumGlowEls[nextGlowIndex];
+		nextGlowEl.style.backgroundImage = nextBackgroundImage;
+		nextGlowEl.classList.add("is-visible");
+		activeGlowEl.classList.remove("is-visible");
+		activeGlowIndex = nextGlowIndex;
 	}
 
 	function setAlbumArtLoadedState(isLoaded) {
 		albumEl.classList.toggle("loaded", isLoaded);
-		if (!albumGlowEl) return;
-		albumGlowEl.classList.toggle("loaded", isLoaded);
+		for (const glowEl of albumGlowEls) {
+			glowEl.classList.toggle("loaded", isLoaded);
+		}
 	}
 
 	function setArtIcon(mode, text = "") {
@@ -67,22 +100,22 @@
 		}
 	}
 
-	function showFallbackAlbumArt() {
+	function showFallbackAlbumArt(animateGlow = true) {
 		currentAlbumArtURL = fallbackAlbumArtURL;
 		albumEl.style.backgroundImage = `url("${fallbackAlbumArtURL}")`;
-		setAlbumArtGlow();
+		setAlbumArtGlow(animateGlow);
 		setAlbumArtLoadedState(true);
 		setArtIcon(null, "");
 	}
 
-	function loadAlbumArt(url) {
+	function loadAlbumArt(url, animateGlow = true) {
 		if (url === currentAlbumArtURL && url !== null) return;
 
 		setAlbumArtLoadedState(false);
 		albumEl.style.backgroundImage = "";
 
 		if (!url) {
-			showFallbackAlbumArt();
+			showFallbackAlbumArt(animateGlow);
 			return;
 		}
 
@@ -96,13 +129,13 @@
 			currentAlbumArtURL = url;
 			img.remove();
 			albumEl.style.backgroundImage = `url("${url}")`;
-			setAlbumArtGlow();
+			setAlbumArtGlow(animateGlow);
 			setAlbumArtLoadedState(true);
 		};
 
 		img.onerror = () => {
 			img.remove();
-			showFallbackAlbumArt();
+			showFallbackAlbumArt(animateGlow);
 		};
 	}
 
@@ -306,7 +339,7 @@
 		updateMask();
 	});
 
-	loadAlbumArt(null);
+	loadAlbumArt(null, false);
 	if (initialState.ok) {
 		data = {
 			ok: true,
@@ -314,9 +347,9 @@
 			artist_name: initialState.artistName || null,
 			album_art: initialState.albumArt || null
 		};
-		loadAlbumArt(initialState.albumArt || null);
+		loadAlbumArt(initialState.albumArt || null, false);
 	} else if (initialState.albumArt) {
-		loadAlbumArt(initialState.albumArt);
+		loadAlbumArt(initialState.albumArt, false);
 	}
 
 	updateTrackDisplay();

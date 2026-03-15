@@ -1,3 +1,4 @@
+use chrono::Datelike;
 use axum::{
     extract::State,
     http::{header, HeaderValue, StatusCode},
@@ -21,6 +22,7 @@ struct AppState {
     profiles_path: PathBuf,
     contact_path: PathBuf,
     tagline_path: PathBuf,
+    footer_path: PathBuf,
     templates: Arc<Tera>,
 }
 
@@ -91,6 +93,7 @@ async fn main() {
         profiles_path: PathBuf::from("content/profiles.md"),
         contact_path: PathBuf::from("content/contact.md"),
         tagline_path: PathBuf::from("content/tagline.md"),
+        footer_path: PathBuf::from("content/footer.md"),
         templates: Arc::new(templates),
     });
 
@@ -132,6 +135,7 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let profiles_fut = tokio::fs::read_to_string(&state.profiles_path);
     let contact_fut = tokio::fs::read_to_string(&state.contact_path);
     let tagline_fut = tokio::fs::read_to_string(&state.tagline_path);
+    let footer_fut = tokio::fs::read_to_string(&state.footer_path);
     let tags_fut = fetch_top_tags(&state.client);
     let lastfm_fut = fetch_currently_scrobbling(&state.client);
 
@@ -140,6 +144,7 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
         profiles_result,
         contact_result,
         tagline_result,
+        footer_result,
         tags_result,
         lastfm_result,
     ) = tokio::join!(
@@ -147,6 +152,7 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
         profiles_fut,
         contact_fut,
         tagline_fut,
+        footer_fut,
         tags_fut,
         lastfm_fut
     );
@@ -162,12 +168,15 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     });
     let tagline_markdown =
         tagline_result.unwrap_or_else(|_| "Software Engineer based in the UK.".to_string());
+    let footer_markdown =
+        footer_result.unwrap_or_else(|_| "© Kieran Drewett".to_string());
 
     let initial_tags = tags_result.unwrap_or_default();
-    let projects_html = render_markdown(&projects_markdown);
-    let profiles_html = render_markdown(&profiles_markdown);
-    let contact_html = render_markdown(&contact_markdown);
-    let tagline_html = render_markdown(&tagline_markdown);
+    let projects_html = render_markdown(&preprocess_markdown(&projects_markdown));
+    let profiles_html = render_markdown(&preprocess_markdown(&profiles_markdown));
+    let contact_html = render_markdown(&preprocess_markdown(&contact_markdown));
+    let tagline_html = render_markdown(&preprocess_markdown(&tagline_markdown));
+    let footer_html = render_markdown(&preprocess_markdown(&footer_markdown));
     let initial_lastfm = match lastfm_result {
         Ok(payload) => InitialLastfm {
             ok: payload.ok,
@@ -185,6 +194,7 @@ async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     context.insert("profiles_html", &profiles_html);
     context.insert("contact_html", &contact_html);
     context.insert("tagline_html", &tagline_html);
+    context.insert("footer_html", &footer_html);
     context.insert("initial_tags", &build_template_tags(&initial_tags));
     context.insert("initial_lastfm", &initial_lastfm);
 
@@ -438,6 +448,20 @@ fn build_template_tags(tags: &[String]) -> Vec<TemplateTag> {
             url: format!("https://www.last.fm/tag/{}", tag.to_lowercase()),
         })
         .collect()
+}
+
+fn build_template_context() -> tera::Context {
+    let now = chrono::Local::now();
+    let mut ctx = tera::Context::new();
+    ctx.insert("current_year", &now.year());
+    ctx.insert("current_month", &now.format("%B").to_string());
+    ctx.insert("current_date", &now.format("%Y-%m-%d").to_string());
+    ctx
+}
+
+fn preprocess_markdown(content: &str) -> String {
+    let ctx = build_template_context();
+    Tera::one_off(content, &ctx, false).unwrap_or_else(|_| content.to_string())
 }
 
 fn render_markdown(markdown: &str) -> String {

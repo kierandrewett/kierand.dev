@@ -411,6 +411,22 @@ main {
 	margin: 0.3rem 0;
 }
 
+.site-footer {
+	padding-top: 0.4rem;
+	border-top: 1px solid var(--border);
+	max-width: 48rem;
+}
+
+.footer-markdown {
+	font-size: 0.9rem;
+	line-height: 1.35;
+	color: var(--color-light);
+}
+
+.footer-markdown p {
+	margin: 0;
+}
+
 .lastfm {
 	display: grid;
 	gap: 0.75rem;
@@ -450,14 +466,19 @@ main {
 	position: absolute;
 	width: 20rem;
 	height: 20rem;
-	filter: blur(150px);
+	filter: blur(150px) saturate(1.5);
 	top: -7rem;
 	left: -7rem;
 	z-index: -1;
-	opacity: 0.5;
+	opacity: 0;
 	pointer-events: none;
 	background-size: cover;
 	background-position: center;
+	transition: opacity 700ms ease;
+}
+
+.lastfm-player .album-art-glow.is-visible {
+	opacity: 0.5;
 }
 
 .lastfm-player:visited {
