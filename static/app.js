@@ -50,12 +50,19 @@
 		titleEl.style.animation = "";
 	}
 
+	function isFallbackGlowImage(backgroundImage) {
+		return !backgroundImage || backgroundImage.includes("album_art.svg");
+	}
+
 	function setAlbumArtGlow(animate = true) {
 		if (albumGlowEls.length === 0) return;
 		const nextBackgroundImage =
 			albumEl.style.backgroundImage || `url("${fallbackAlbumArtURL}")`;
 		const activeGlowEl = albumGlowEls[activeGlowIndex];
-		const shouldAnimate = animate && hasInitializedGlow;
+		const shouldAnimate =
+			animate &&
+			hasInitializedGlow &&
+			!isFallbackGlowImage(activeGlowEl.style.backgroundImage);
 
 		if (activeGlowEl.style.backgroundImage === nextBackgroundImage) {
 			return;
@@ -68,16 +75,15 @@
 			}
 			activeGlowEl.style.backgroundImage = nextBackgroundImage;
 			activeGlowEl.classList.add("is-visible");
-			void activeGlowEl.offsetWidth;
-			for (const glowEl of albumGlowEls) {
-				glowEl.style.transition = "";
-			}
 			hasInitializedGlow = true;
 			return;
 		}
 
 		const nextGlowIndex = activeGlowIndex === 0 ? 1 : 0;
 		const nextGlowEl = albumGlowEls[nextGlowIndex];
+		for (const glowEl of albumGlowEls) {
+			glowEl.style.transition = "";
+		}
 		nextGlowEl.style.backgroundImage = nextBackgroundImage;
 		nextGlowEl.classList.add("is-visible");
 		activeGlowEl.classList.remove("is-visible");
