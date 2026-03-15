@@ -481,6 +481,13 @@ main {
 	opacity: 0.5;
 }
 
+@media (prefers-reduced-motion: reduce) {
+	.profile-picture-glow,
+	.lastfm-player .album-art-glow {
+		display: none;
+	}
+}
+
 .lastfm-player:visited {
 	color: var(--color-lighter);
 }

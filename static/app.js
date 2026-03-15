@@ -29,11 +29,14 @@
 	let progress = null;
 	let overflow = false;
 	let raf = null;
+	let progressBarRaf = null;
+	let progressBarWidth = 0;
 	let activeGlowIndex = 0;
 	let hasInitializedGlow = false;
 	let currentAlbumArtURL = null;
 	let ws = null;
 	let wsConnected = false;
+	const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 	const fallbackAlbumArtURL = "/images/album_art.svg";
 	const initialState = {
 		ok: titleWrap.dataset.initialOk === "true",
@@ -221,6 +224,59 @@
 		return `${minutes}:${String(seconds).padStart(2, "0")}`;
 	}
 
+	function easeOutCubic(value) {
+		return 1 - Math.pow(1 - value, 3);
+	}
+
+	function setProgressBarWidth(width) {
+		const clampedWidth = Math.max(0, Math.min(100, width));
+		progressBarWidth = clampedWidth;
+		progressBarEl.style.width = `${clampedWidth}%`;
+	}
+
+	function animateProgressBarWidth(targetWidth, duration = 320) {
+		const clampedTarget = Math.max(0, Math.min(100, targetWidth));
+
+		if (prefersReducedMotion.matches) {
+			if (progressBarRaf !== null) {
+				cancelAnimationFrame(progressBarRaf);
+				progressBarRaf = null;
+			}
+			setProgressBarWidth(clampedTarget);
+			return;
+		}
+
+		if (progressBarRaf !== null) {
+			cancelAnimationFrame(progressBarRaf);
+			progressBarRaf = null;
+		}
+
+		const startWidth = progressBarWidth;
+		const delta = clampedTarget - startWidth;
+
+		if (Math.abs(delta) < 0.05) {
+			setProgressBarWidth(clampedTarget);
+			return;
+		}
+
+		const startTime = performance.now();
+		const step = (now) => {
+			const elapsed = now - startTime;
+			const t = Math.min(1, elapsed / duration);
+			const eased = easeOutCubic(t);
+			setProgressBarWidth(startWidth + delta * eased);
+
+			if (t < 1) {
+				progressBarRaf = requestAnimationFrame(step);
+				return;
+			}
+
+			progressBarRaf = null;
+		};
+
+		progressBarRaf = requestAnimationFrame(step);
+	}
+
 	function updateProgress() {
 		if (progress && data && data.ok && data.track_name) {
 			progressEl.hidden = false;
@@ -229,10 +285,14 @@
 			const width = progress.duration_ms
 				? (progress.position_ms / progress.duration_ms) * 100
 				: 0;
-			progressBarEl.style.width = `${Math.max(0, Math.min(100, width))}%`;
+			animateProgressBarWidth(width);
 		} else {
 			progressEl.hidden = true;
-			progressBarEl.style.width = "0%";
+			if (progressBarRaf !== null) {
+				cancelAnimationFrame(progressBarRaf);
+				progressBarRaf = null;
+			}
+			setProgressBarWidth(0);
 		}
 	}
 
