@@ -3,6 +3,7 @@
 	const titleEl = document.getElementById("track-title");
 	const artistEl = document.getElementById("artist-name");
 	const albumEl = document.getElementById("album-art");
+	const albumGlowEl = document.getElementById("album-art-glow");
 	const artIconEl = document.getElementById("art-icon");
 	const progressEl = document.getElementById("progress");
 	const progressCurrentEl = document.getElementById("progress-current");
@@ -45,6 +46,18 @@
 		titleEl.style.animation = "";
 	}
 
+	function setAlbumArtGlow() {
+		if (!albumGlowEl) return;
+		albumGlowEl.style.backgroundImage =
+			albumEl.style.backgroundImage || `url("${fallbackAlbumArtURL}")`;
+	}
+
+	function setAlbumArtLoadedState(isLoaded) {
+		albumEl.classList.toggle("loaded", isLoaded);
+		if (!albumGlowEl) return;
+		albumGlowEl.classList.toggle("loaded", isLoaded);
+	}
+
 	function setArtIcon(mode, text = "") {
 		artIconEl.className = "art-icon";
 		artIconEl.textContent = text;
@@ -57,14 +70,15 @@
 	function showFallbackAlbumArt() {
 		currentAlbumArtURL = fallbackAlbumArtURL;
 		albumEl.style.backgroundImage = `url("${fallbackAlbumArtURL}")`;
-		albumEl.classList.add("loaded");
+		setAlbumArtGlow();
+		setAlbumArtLoadedState(true);
 		setArtIcon(null, "");
 	}
 
 	function loadAlbumArt(url) {
 		if (url === currentAlbumArtURL && url !== null) return;
 
-		albumEl.classList.remove("loaded");
+		setAlbumArtLoadedState(false);
 		albumEl.style.backgroundImage = "";
 
 		if (!url) {
@@ -82,7 +96,8 @@
 			currentAlbumArtURL = url;
 			img.remove();
 			albumEl.style.backgroundImage = `url("${url}")`;
-			albumEl.classList.add("loaded");
+			setAlbumArtGlow();
+			setAlbumArtLoadedState(true);
 		};
 
 		img.onerror = () => {

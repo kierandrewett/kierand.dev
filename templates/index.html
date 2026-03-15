@@ -4,6 +4,7 @@
 		<h1>Kieran Drewett</h1>
 		<div class="tagline-markdown">{{ tagline_html | safe }}</div>
 	</div>
+	<img class="profile-picture profile-picture-glow" src="/favicon.png" alt="Kieran Drewett" />
 	<img class="profile-picture" src="/favicon.png" alt="Kieran Drewett" />
 </header>
 
@@ -29,6 +30,7 @@
 			target="_blank"
 			rel="noreferrer"
 		>
+			<div class="album-art-glow" id="album-art-glow" aria-hidden="true"></div>
 			<div
 				class="album-art {% if initial_lastfm.album_art %}loaded{% endif %}"
 				id="album-art"
