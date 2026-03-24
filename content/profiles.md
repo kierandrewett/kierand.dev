@@ -1,5 +1,5 @@
 - [GitHub](https://github.com/kierandrewett)
 - [LinkedIn](https://www.linkedin.com/in/kieran-drewett)
-- [Twitter](https://twitter.com/EnderDev_)
+- [Twitter](https://twitter.com/kierandrewett)
 - [Discord](https://discord.com/users/217562587938816000)
 - [Last.fm](https://last.fm/user/EnderDev)
