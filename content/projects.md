@@ -7,6 +7,7 @@
 -   A tool for [generating OTJ logs](https://github.com/kierandrewett/otj-log-llm) using a large-language model.
 -   A [virtual machine management frontend](https://github.com/kierandrewett/vm-manager) for QEMU virtual machines deployed through Docker.
 -   A [desktop app](https://github.com/kierandrewett/pikvm-desktop) for accessing my [PiKVM](https://pikvm.org)'s interface from my desk.
+-   A [real-time vehicle OBD-II diagnostic dashboard](https://github.com/kierandrewett/obd) for ELM327 adapters.
 -   A [driving game](https://github.com/kierandrewett/8.2-driving) about driving safely made using Godot.
 -   A [Wordle clone](https://github.com/kierandrewett/ferdle) written in Rust for the terminal.
 -   A [pacman-inspired CLI wrapper](https://github.com/kierandrewett/pacman) for `dnf`/`yum` on RPM-based Linux systems.
