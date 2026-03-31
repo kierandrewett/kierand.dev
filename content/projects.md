@@ -2,6 +2,7 @@
 -   [WING](https://github.com/kierandrewett/wing) is an experimental Wayland compositor with a QuickJS runtime so UI can be JSX.
 -   [Dot Browser](https://github.com/dothq/browser) is a privacy-focused web browser built on top of [Mozilla Firefox](https://mozilla.org/firefox).
 -   [Immidi](https://github.com/kierandrewett/immidi) is an immediate-mode note player/functional programming langauge for creating music.
+-   [aide](https://github.com/kierandrewett/aide) is a terminal-based IDE for [Claude Code](https://claude.ai/code)
 -   A powerful [electronic voting system](https://github.com/kierandrewett/consensus) built using TypeScript and Fastify.
 -   An [attempt at making a custom shell](https://github.com/kierandrewett/hypr) with Hyprland.
 -   A tool for [generating OTJ logs](https://github.com/kierandrewett/otj-log-llm) using a large-language model.
