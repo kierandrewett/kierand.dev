@@ -10,19 +10,28 @@ use pulldown_cmark::{html::push_html, Options, Parser};
 use reqwest::Client;
 use serde::Serialize;
 use serde_json::Value;
-use std::{env, net::SocketAddr, path::PathBuf, sync::Arc, time::UNIX_EPOCH};
+use std::{env, net::SocketAddr, sync::Arc, time::{Duration, Instant, UNIX_EPOCH}};
 use tera::{Context, Tera};
 use tokio::net::TcpListener;
+use tokio::sync::RwLock;
 use tower_http::services::{ServeDir, ServeFile};
+
+#[derive(Clone)]
+struct CachedContent {
+    projects: String,
+    profiles: String,
+    contact: String,
+    tagline: String,
+    footer: String,
+    fetched_at: Instant,
+}
 
 #[derive(Clone)]
 struct AppState {
     client: Client,
-    projects_path: PathBuf,
-    profiles_path: PathBuf,
-    contact_path: PathBuf,
-    tagline_path: PathBuf,
-    footer_path: PathBuf,
+    content_base_url: String,
+    content_cache: Arc<RwLock<Option<CachedContent>>>,
+    content_cache_ttl: Duration,
     templates: Arc<Tera>,
 }
 
@@ -87,13 +96,20 @@ async fn main() {
 
     let templates = Tera::new("templates/**/*").expect("failed to initialize tera templates");
 
+    let content_base_url = env::var("CONTENT_BASE_URL").unwrap_or_else(|_| {
+        "https://raw.githubusercontent.com/kierandrewett/kierand.dev/main/content".to_string()
+    });
+
+    let content_cache_secs: u64 = env::var("CONTENT_CACHE_SECS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(300);
+
     let state = Arc::new(AppState {
         client,
-        projects_path: PathBuf::from("content/projects.md"),
-        profiles_path: PathBuf::from("content/profiles.md"),
-        contact_path: PathBuf::from("content/contact.md"),
-        tagline_path: PathBuf::from("content/tagline.md"),
-        footer_path: PathBuf::from("content/footer.md"),
+        content_base_url,
+        content_cache: Arc::new(RwLock::new(None)),
+        content_cache_ttl: Duration::from_secs(content_cache_secs),
         templates: Arc::new(templates),
     });
 
@@ -130,45 +146,86 @@ async fn main() {
         .expect("server exited unexpectedly");
 }
 
-async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
-    let projects_fut = tokio::fs::read_to_string(&state.projects_path);
-    let profiles_fut = tokio::fs::read_to_string(&state.profiles_path);
-    let contact_fut = tokio::fs::read_to_string(&state.contact_path);
-    let tagline_fut = tokio::fs::read_to_string(&state.tagline_path);
-    let footer_fut = tokio::fs::read_to_string(&state.footer_path);
-    let tags_fut = fetch_top_tags(&state.client);
-    let lastfm_fut = fetch_currently_scrobbling(&state.client);
+async fn fetch_content(client: &Client, base_url: &str, file: &str) -> Result<String, String> {
+    let url = format!("{}/{}", base_url, file);
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
 
-    let (
-        projects_result,
-        profiles_result,
-        contact_result,
-        tagline_result,
-        footer_result,
-        tags_result,
-        lastfm_result,
-    ) = tokio::join!(
-        projects_fut,
-        profiles_fut,
-        contact_fut,
-        tagline_fut,
-        footer_fut,
-        tags_fut,
-        lastfm_fut
+    if !response.status().is_success() {
+        return Err(format!("HTTP {} for {}", response.status(), url));
+    }
+
+    response.text().await.map_err(|e| e.to_string())
+}
+
+async fn fetch_all_content(state: &AppState) -> CachedContent {
+    let base = &state.content_base_url;
+    let client = &state.client;
+
+    let (projects, profiles, contact, tagline, footer) = tokio::join!(
+        fetch_content(client, base, "projects.md"),
+        fetch_content(client, base, "profiles.md"),
+        fetch_content(client, base, "contact.md"),
+        fetch_content(client, base, "tagline.md"),
+        fetch_content(client, base, "footer.md"),
     );
 
-    let projects_markdown = projects_result.unwrap_or_else(|_| {
-        "- **Projects unavailable** — Could not read `content/projects.md`.".to_string()
-    });
-    let profiles_markdown = profiles_result.unwrap_or_else(|_| {
-        "- **Profiles unavailable** — Could not read `content/profiles.md`.".to_string()
-    });
-    let contact_markdown = contact_result.unwrap_or_else(|_| {
-        "- **Contact unavailable** — Could not read `content/contact.md`.".to_string()
-    });
-    let tagline_markdown =
-        tagline_result.unwrap_or_else(|_| "Software Engineer based in the UK.".to_string());
-    let footer_markdown = footer_result.unwrap_or_else(|_| "© Kieran Drewett".to_string());
+    CachedContent {
+        projects: projects.unwrap_or_else(|_| {
+            "- **Projects unavailable** — Could not fetch `content/projects.md`.".to_string()
+        }),
+        profiles: profiles.unwrap_or_else(|_| {
+            "- **Profiles unavailable** — Could not fetch `content/profiles.md`.".to_string()
+        }),
+        contact: contact.unwrap_or_else(|_| {
+            "- **Contact unavailable** — Could not fetch `content/contact.md`.".to_string()
+        }),
+        tagline: tagline
+            .unwrap_or_else(|_| "Software Engineer based in the UK.".to_string()),
+        footer: footer.unwrap_or_else(|_| "© Kieran Drewett".to_string()),
+        fetched_at: Instant::now(),
+    }
+}
+
+async fn get_content(state: &AppState) -> CachedContent {
+    {
+        let cache = state.content_cache.read().await;
+        if let Some(cached) = &*cache {
+            if cached.fetched_at.elapsed() < state.content_cache_ttl {
+                return cached.clone();
+            }
+        }
+    }
+
+    let mut cache = state.content_cache.write().await;
+    // Double-check after acquiring write lock
+    if let Some(cached) = &*cache {
+        if cached.fetched_at.elapsed() < state.content_cache_ttl {
+            return cached.clone();
+        }
+    }
+
+    let content = fetch_all_content(state).await;
+    *cache = Some(content.clone());
+    content
+}
+
+async fn home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let content = get_content(&state).await;
+
+    let (tags_result, lastfm_result) = tokio::join!(
+        fetch_top_tags(&state.client),
+        fetch_currently_scrobbling(&state.client),
+    );
+
+    let projects_markdown = content.projects;
+    let profiles_markdown = content.profiles;
+    let contact_markdown = content.contact;
+    let tagline_markdown = content.tagline;
+    let footer_markdown = content.footer;
 
     let initial_tags = tags_result.unwrap_or_default();
     let projects_html = render_markdown(&preprocess_markdown(&projects_markdown));
