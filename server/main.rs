@@ -146,19 +146,25 @@ async fn main() {
         .expect("server exited unexpectedly");
 }
 
-async fn fetch_content(client: &Client, base_url: &str, file: &str) -> Result<String, String> {
+async fn fetch_content(client: &Client, base_url: &str, file: &str) -> String {
     let url = format!("{}/{}", base_url, file);
-    let response = client
-        .get(&url)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
+    let remote = async {
+        let response = client.get(&url).send().await.map_err(|e| e.to_string())?;
+        if !response.status().is_success() {
+            return Err(format!("HTTP {} for {}", response.status(), url));
+        }
+        response.text().await.map_err(|e| e.to_string())
+    };
 
-    if !response.status().is_success() {
-        return Err(format!("HTTP {} for {}", response.status(), url));
+    match remote.await {
+        Ok(content) => content,
+        Err(_) => {
+            let local_path = format!("content/{}", file);
+            tokio::fs::read_to_string(&local_path)
+                .await
+                .unwrap_or_default()
+        }
     }
-
-    response.text().await.map_err(|e| e.to_string())
 }
 
 async fn fetch_all_content(state: &AppState) -> CachedContent {
@@ -174,18 +180,11 @@ async fn fetch_all_content(state: &AppState) -> CachedContent {
     );
 
     CachedContent {
-        projects: projects.unwrap_or_else(|_| {
-            "- **Projects unavailable** — Could not fetch `content/projects.md`.".to_string()
-        }),
-        profiles: profiles.unwrap_or_else(|_| {
-            "- **Profiles unavailable** — Could not fetch `content/profiles.md`.".to_string()
-        }),
-        contact: contact.unwrap_or_else(|_| {
-            "- **Contact unavailable** — Could not fetch `content/contact.md`.".to_string()
-        }),
-        tagline: tagline
-            .unwrap_or_else(|_| "Software Engineer based in the UK.".to_string()),
-        footer: footer.unwrap_or_else(|_| "© Kieran Drewett".to_string()),
+        projects,
+        profiles,
+        contact,
+        tagline,
+        footer,
         fetched_at: Instant::now(),
     }
 }
